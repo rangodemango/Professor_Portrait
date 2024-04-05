@@ -18,8 +18,8 @@ if not os.listdir(IMAGE_DIRECTORY):
     exit()  # This line will terminate the script
 
 # Get the bot token from an environment variable
-GUILD_ID = int(os.getenv('TEST_GUILD_ID'))
-CHANNEL_NAME = 'teacher-of-the-day'
+GUILD_ID = int(os.getenv('GUILD_ID'))
+CHANNEL_NAME = '🤖┃teacher-of-the-day'
 EMOJIS = ['🍎', '🕍', '📚', '🏫', '🎓', '📖', '🛰', '📝', '🤡', '💼', '🧟', '🔩']
 
 # Initialize the bot
@@ -61,7 +61,7 @@ async def send_announcement_message(guild, teacher_name):
 @client.event
 async def on_ready():
     print(f'Logged in as {client.user.name}')
-    change_icon.start()  # Start the task to change the icon
+    change_icon.start()
 
 @tasks.loop(hours=24)
 async def change_icon():
