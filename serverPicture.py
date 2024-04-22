@@ -1,5 +1,7 @@
+import asyncio
 import random
 import discord
+import datetime
 from discord.ext import commands, tasks
 from PIL import Image, ExifTags
 import os
@@ -63,14 +65,31 @@ async def on_ready():
     print(f'Logged in as {client.user.name}')
     change_icon.start()
 
-@tasks.loop(hours=24)
+@tasks.loop(hours=168)
 async def change_icon():
+    now = datetime.datetime.now()
+    target_day = 1  # Day of the week (e.g., 3 for Wednesday)
+    target_hour = 8  # Target hour (24-hour format)
+
+    next_run = now.replace(hour=target_hour, minute=0, second=0, microsecond=0)
+    if now.weekday() > target_day:
+        next_run += datetime.timedelta(days=(7 - now.weekday() + target_day))
+    elif now.weekday() < target_day:
+        next_run += datetime.timedelta(days=(target_day - now.weekday()))
+    elif now.hour >= target_hour:
+        next_run += datetime.timedelta(days=7)
+
+    delay = (next_run - now).total_seconds()
+
+    if delay > 0:
+        await asyncio.sleep(delay)
+
     guild = client.get_guild(GUILD_ID)
     if guild:
         image_list = get_image_list()
-        if not image_list:  # Check if the image list is empty
+        if not image_list:
             print("No images found in the 'img' directory.")
-            return  # Exit the task if there are no images
+            return
         image_path = random.choice(image_list)
         correct_image_orientation(image_path)
         with open(image_path, 'rb') as f:
@@ -86,3 +105,8 @@ async def change_icon():
             await send_announcement_message(guild, teacher_name)
     else:
         print("Guild not found.")
+
+@client.event
+async def on_ready():
+    print(f'Logged in as {client.user.name}')
+    change_icon.start()
